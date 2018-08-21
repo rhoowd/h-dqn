@@ -55,6 +55,9 @@ def test_test_steps_and_episode_num(agent, step):
     assert agent.t_step == step
 
 
+def test_tensorboard(agent):
+    agent.learn()
+    
 
     
 

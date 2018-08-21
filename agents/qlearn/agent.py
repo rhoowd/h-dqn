@@ -13,12 +13,12 @@ class Agent(BaseAgent):
 
         # hyper parameter setting 
         self.df = .99   # discount factor
-        self.lr = 0.1   # learning rate
+        self.lr = 0.01   # learning rate
 
         # Make Q-table
         self.q_table = np.zeros([self.obs_dim, self.action_dim])
 
-        self.set_gui_flag(False, True)
+        self.set_gui_flag(False, False)
 
     def get_action(self, obs, train=True):
 

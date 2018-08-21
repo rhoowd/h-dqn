@@ -22,7 +22,3 @@ def test_get_action_format_check(agent):
 
 def test_run_learn(agent):
     agent.learn()
-    agent.test()
-
-def test_run_test(agent):
-    agent.test()
