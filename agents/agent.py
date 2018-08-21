@@ -11,7 +11,7 @@ class Agent(object):
         self.train_step = FLAGS.train_step
         self.test_step = FLAGS.test_step
         self.test_period = FLAGS.test_period
-        self.max_step_per_episode = 15
+        self.max_step_per_episode = 1000
 
         self.action_dim = env.action_space.n
         self.obs_dim = env.observation_space.n
@@ -89,7 +89,8 @@ class Agent(object):
             if self.is_episode_done_in_test(done):
                 test_total_reward += ep_total_reward
 
-        self.tb.write('test_period', 'reward', test_total_reward/(self.t_step - self.t_episode_step), self.global_step)
+        if self.t_step != self.t_episode_step:
+            self.tb.write('test_period', 'reward', test_total_reward/(self.t_step - self.t_episode_step), self.global_step)
 
     def get_action(self, obs, train=True):
         print("get_action is not implemented !")

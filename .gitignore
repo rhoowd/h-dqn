@@ -1,5 +1,5 @@
 .vscode
 .pytest_cache
 *.pyc
-results/*
+*/results/*
 *.log

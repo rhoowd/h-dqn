@@ -8,10 +8,10 @@ is_testing = True
 
 if is_testing:
     class Flags_entity(object):
-        agent = "qlearn"
-        train_step = 200000
-        test_step = 100
-        test_period = 50
+        agent = "dqn"
+        train_step = 100000
+        test_step = 1000
+        test_period = 200
 
     class Flags(object):
         FLAGS = Flags_entity()
