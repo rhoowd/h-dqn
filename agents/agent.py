@@ -1,9 +1,11 @@
 from __future__ import print_function
 import tensorflow as tf
+import logging 
 from tensorboard import TensorBoard
 import agents.config as config
 
 FLAGS = config.flags.FLAGS
+result = logging.getLogger('Result')
 
 class Agent(object):
     def __init__(self, env):
@@ -11,7 +13,7 @@ class Agent(object):
         self.train_step = FLAGS.train_step
         self.test_step = FLAGS.test_step
         self.test_period = FLAGS.test_period
-        self.max_step_per_episode = 1000
+        self.max_step_per_episode = FLAGS.max_step_per_episode = 1000
 
         self.action_dim = env.action_space.n
         self.obs_dim = env.observation_space.n
@@ -26,11 +28,7 @@ class Agent(object):
         self.gui_flag_l = False
         self.gui_flag_t = False
 
-        self.tb = TensorBoard()
-        self.tb.add_graph('train_ep')        
-        self.tb.add_label('train_ep', 'reward')
-        self.tb.add_graph('test_period')        
-        self.tb.add_label('test_period', 'reward')
+        self.tb = self.set_tensorboard()
 
     def learn(self):
         self.l_step = 0
@@ -40,8 +38,8 @@ class Agent(object):
             obs = self.env.reset()
             done = False
             ep_total_reward = 0
-            if self.gui_flag_l:
-                self.env.render()
+
+            self.gui_render(self.gui_flag_l)
 
             while not (self.is_episode_done(done) or self.is_learn_done()):
                 self.increase_step_in_learn()
@@ -52,8 +50,7 @@ class Agent(object):
                 obs = obs_next
 
                 ep_total_reward += reward
-                if self.gui_flag_l:
-                    self.env.render()
+                self.gui_render(self.gui_flag_l)
 
                 if self.check_test_period():
                     self.test()
@@ -61,6 +58,7 @@ class Agent(object):
 
             if not self.check_test_period():
                 self.tb.write('train_ep', 'reward', reward/self.l_episode_step, self.global_step)
+
 
     def test(self):
         self.t_step = 0
@@ -71,8 +69,7 @@ class Agent(object):
             obs = self.env.reset()
             done = False
             ep_total_reward = 0
-            if self.gui_flag_t:
-                self.env.render()
+            self.gui_render(self.gui_flag_t)
             
             while not (self.is_episode_done_in_test(done) or self.is_learn_done_in_test()):
                 self.increase_step_in_test()                
@@ -82,15 +79,12 @@ class Agent(object):
                 obs = obs_next
 
                 ep_total_reward += reward
-
-                if self.gui_flag_t:
-                    self.env.render()
+                self.gui_render(self.gui_flag_t)
 
             if self.is_episode_done_in_test(done):
                 test_total_reward += ep_total_reward
 
-        if self.t_step != self.t_episode_step:
-            self.tb.write('test_period', 'reward', test_total_reward/(self.t_step - self.t_episode_step), self.global_step)
+        self.log_result(done, test_total_reward)
 
     def get_action(self, obs, train=True):
         print("get_action is not implemented !")
@@ -120,6 +114,7 @@ class Agent(object):
     def reset_episode_in_learn(self):
         self.episode_num += 1
         self.l_episode_step = 0
+        self.reset_episode()
 
     def increase_step_in_test(self):
         self.t_episode_step += 1
@@ -127,6 +122,10 @@ class Agent(object):
 
     def reset_episode_in_test(self):
         self.t_episode_step = 0
+        self.reset_episode()
+
+    def reset_episode(self):
+        pass
 
     def set_gui_flag(self, learn, test=True):
         self.gui_flag_l = learn
@@ -134,3 +133,22 @@ class Agent(object):
 
     def check_test_period(self):
         return self.global_step % self.test_period == 0
+
+    def set_tensorboard(self):
+        tb = TensorBoard()
+        tb.add_graph('train_ep')        
+        tb.add_label('train_ep', 'reward')
+        tb.add_graph('test_period')        
+        tb.add_label('test_period', 'reward')
+        return tb
+
+    def gui_render(self, flag):
+        if flag:
+            self.env.render()
+
+    def log_result(self, done, test_total_reward):
+        if self.t_step != self.t_episode_step:  # check the episode is terminated at least one
+            st = self.t_step - (1-done)*self.t_episode_step # Ignore last episode if it is abnormal terminated 
+            self.tb.write('test_period', 'reward', test_total_reward/st, self.global_step)
+            result.info("test_reward\t{}\t{}".format(test_total_reward/st, self.global_step))
+

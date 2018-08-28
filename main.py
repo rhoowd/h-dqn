@@ -6,20 +6,23 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/agents")
 import gym
 import gym_grid
 from agents.agent import Agent
+import agents
+import agents.config
 
-
-class Flag_entity(object):
-    hi = "hello"
-
-class Flag(object):
-    f = Flag_entity()
+FLAGS = agents.config.flags.FLAGS
 
 if __name__ == '__main__':
+    # set_seed(FLAGS.seed)
 
-    f = Flag()
-    print(f.hello)
-    print(f.f.hi)
-    exit()
-    env = gym.make('grid-dsdp-v0')
-    agent = Agent(env)
-    agent.test()
+    # Load environment
+    print('Environment: {}'.format(FLAGS.env))
+    env = gym.make(FLAGS.env)
+
+    # Load agent
+    print('Agent: {}'.format(FLAGS.agent))
+    agent = agents.load(FLAGS.agent+"/agent.py").Agent(env)
+
+    # start learning
+    agent.learn()
+
+

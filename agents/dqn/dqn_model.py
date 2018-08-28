@@ -34,7 +34,7 @@ class DQN:
             self.target_network = self.generate_network(self.state_ph)  # Make target network
 
         q_value = tf.reduce_sum(self.online_network * tf.one_hot(self.action_ph, action_dim),
-                                axis=1, keep_dims=True)
+                                axis=1, keepdims=True)
         error = tf.square(self.q_target_ph - q_value)
         loss = tf.reduce_mean(error)
         optimizer = tf.train.AdamOptimizer(learning_rate)

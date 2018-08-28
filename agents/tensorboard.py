@@ -5,7 +5,7 @@ class TensorBoard(object):
 
     def __init__(self):
         self.sess = tf.Session()
-        self.file_name = "./agents/results/eval/"+config.filename+"/"
+        self.file_name = "./agents/results/tb/"+config.filename+"/"
         self.graphs = dict()
         self.labels = dict()
 
